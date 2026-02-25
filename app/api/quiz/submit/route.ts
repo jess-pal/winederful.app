@@ -1,0 +1,64 @@
+import crypto from "node:crypto";
+import { NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { scoreQuiz } from "@/lib/scoring/engine";
+import { quizSubmitSchema } from "@/lib/zodSchemas";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { getRequestFingerprint } from "@/lib/security";
+import { trackEvent } from "@/lib/analytics";
+import { log } from "@/lib/logger";
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const parsed = quizSubmitSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid request payload", issues: parsed.error.issues }, { status: 400 });
+    }
+
+    const { ipHash, uaHash } = await getRequestFingerprint();
+    const limiter = checkRateLimit(`quiz_submit:${ipHash}`, 10, 60_000);
+    if (!limiter.allowed) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+
+    const result = scoreQuiz(parsed.data.answers);
+    const shareToken = crypto.randomBytes(18).toString("base64url");
+
+    const { data, error } = await db
+      .from("quiz_sessions")
+      .insert({
+        result_persona: result.personaId,
+        result_payload: result,
+        public_share_token: shareToken,
+        answers_payload: parsed.data.answers.map((a) => ({ question_id: a.questionId, option_id: a.optionId })),
+        ip_hash: ipHash,
+        user_agent_hash: uaHash
+      })
+      .select("id")
+      .single();
+
+    if (error || !data) {
+      log("error", "quiz_session_insert_failed", { reason: error?.message || "unknown" });
+      return NextResponse.json({ error: "Could not save quiz session" }, { status: 500 });
+    }
+
+    await trackEvent({
+      eventName: "completed_quiz",
+      sessionId: data.id,
+      metadata: { persona_id: result.personaId, page: "/quiz" },
+      ipHash
+    });
+
+    return NextResponse.json({
+      sessionId: data.id,
+      shareToken,
+      shareUrl: `/share/${shareToken}`,
+      result
+    });
+  } catch (error) {
+    log("error", "quiz_submit_unhandled", { reason: error instanceof Error ? error.message : "unknown" });
+    return NextResponse.json({ error: "Unexpected server error" }, { status: 500 });
+  }
+}
