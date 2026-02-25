@@ -44,7 +44,6 @@ export function QuizClient() {
 
   const current = QUIZ_QUESTIONS[index];
   const selected = answers[current.id];
-  const canContinue = Boolean(selected);
 
   const payload = useMemo<Answer[]>(() => {
     return QUIZ_QUESTIONS.map((q) => ({ questionId: q.id, optionId: answers[q.id] })).filter((a) => Boolean(a.optionId));
@@ -72,6 +71,21 @@ export function QuizClient() {
     router.push(`/results?sid=${encodeURIComponent(data.sessionId)}&token=${encodeURIComponent(data.shareToken)}`);
   };
 
+  const onNext = () => {
+    if (!answers[current.id]) {
+      setError("Please select an option before continuing.");
+      return;
+    }
+
+    setError(null);
+    setIndex((v) => Math.min(v + 1, QUIZ_QUESTIONS.length - 1));
+  };
+
+  const onSelectOption = (optionId: string) => {
+    setAnswers((prev) => ({ ...prev, [current.id]: optionId }));
+    setError(null);
+  };
+
   return (
     <Card>
       <div className="space-y-5">
@@ -79,25 +93,23 @@ export function QuizClient() {
         <p className="text-sm text-brand-700">Question {index + 1} of 10</p>
         <h2 className="text-2xl leading-tight">{current.prompt}</h2>
 
-        <div className="space-y-3" role="radiogroup" aria-label={current.prompt}>
+        <fieldset className="space-y-3" aria-label={current.prompt}>
           {current.options.map((option) => {
             const active = selected === option.id;
             return (
               <button
                 key={option.id}
-                className={`w-full rounded-xl border p-4 text-left transition ${
+                type="button"
+                onClick={() => onSelectOption(option.id)}
+                className={`block w-full rounded-xl border p-4 text-left transition ${
                   active ? "border-brand-700 bg-brand-50" : "border-gray-200 bg-white hover:border-brand-500"
                 }`}
-                onClick={() => setAnswers((prev) => ({ ...prev, [current.id]: option.id }))}
-                role="radio"
-                aria-checked={active}
-                type="button"
               >
                 {option.label}
               </button>
             );
           })}
-        </div>
+        </fieldset>
 
         {error && <p className="text-sm text-red-700">{error}</p>}
 
@@ -107,7 +119,7 @@ export function QuizClient() {
           </Button>
 
           {index < QUIZ_QUESTIONS.length - 1 ? (
-            <Button onClick={() => setIndex((v) => Math.min(v + 1, QUIZ_QUESTIONS.length - 1))} disabled={!canContinue || isSubmitting}>
+            <Button onClick={onNext} disabled={isSubmitting}>
               Next
             </Button>
           ) : (

@@ -9,12 +9,14 @@ const styles = {
 export function Button({
   variant = "primary",
   className,
+  type = "button",
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: keyof typeof styles;
 }) {
   return (
     <button
+      type={type}
       className={cn(
         "inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
         styles[variant],
