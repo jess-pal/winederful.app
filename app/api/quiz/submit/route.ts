@@ -7,6 +7,7 @@ import { checkRateLimit } from "@/lib/rateLimit";
 import { getRequestFingerprint } from "@/lib/security";
 import { trackEvent } from "@/lib/analytics";
 import { log } from "@/lib/logger";
+import { guardQuizSubmission } from "@/lib/quizAbuse";
 
 export async function POST(request: Request) {
   try {
@@ -21,6 +22,21 @@ export async function POST(request: Request) {
     const limiter = checkRateLimit(`quiz_submit:${ipHash}`, 10, 60_000);
     if (!limiter.allowed) {
       return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    }
+
+    const guard = await guardQuizSubmission(ipHash, uaHash);
+    if (!guard.allowed) {
+      log("warn", "quiz_submit_blocked", {
+        reason: guard.reason || "unknown",
+        retry_after_ms: guard.retryAfterMs || 0
+      });
+      return NextResponse.json(
+        {
+          error: "Too many submissions from this network. Please wait and try again.",
+          retryAfterMs: guard.retryAfterMs || undefined
+        },
+        { status: 429 }
+      );
     }
 
     const result = scoreQuiz(parsed.data.answers);

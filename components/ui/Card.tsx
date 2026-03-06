@@ -5,9 +5,5 @@ export function Card({
   children,
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & { children: React.ReactNode }) {
-  return (
-    <div className={cn("rounded-2xl bg-white p-6 shadow-card ring-1 ring-black/5", className)} {...props}>
-      {children}
-    </div>
-  );
+  return <div className={cn("surface-card rounded-3xl p-6 text-[#F2EEE6] sm:p-7", className)} {...props}>{children}</div>;
 }

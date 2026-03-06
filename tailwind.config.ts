@@ -10,14 +10,14 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          50: "#f6faf8",
-          100: "#eaf4ee",
-          500: "#2e6f4f",
-          700: "#1f4d37",
-          900: "#0f2a1e"
+          50: "#fdf7f8",
+          100: "#f8e8eb",
+          500: "#7a1f35",
+          700: "#5d1228",
+          900: "#2a0712"
         },
         accent: {
-          500: "#a44b2a"
+          500: "#b43d46"
         }
       },
       fontFamily: {
@@ -29,7 +29,7 @@ const config: Config = {
         22: "5.5rem"
       },
       boxShadow: {
-        card: "0 12px 32px -18px rgba(15, 42, 30, 0.45)"
+        card: "0 18px 40px -22px rgba(10, 2, 5, 0.75)"
       }
     }
   },

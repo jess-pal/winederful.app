@@ -26,6 +26,7 @@ export type Persona = {
   description: string;
   recommendedStyles: [string, string, string];
   requiredTraits: Partial<Record<Trait, number>>;
+  traitProfile: Partial<Record<Trait, number>>;
   explanationTemplate: string[];
 };
 

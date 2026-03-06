@@ -2,67 +2,99 @@ import type { Persona } from "@/lib/scoring/types";
 
 export const PERSONAS: Persona[] = [
   {
-    personaId: "crisp-minimalist",
-    title: "Crisp Minimalist",
-    description: "You like bright, clean flavors and no-fuss choices.",
-    recommendedStyles: ["Sauvignon Blanc", "Pinot Grigio", "Dry Riesling"],
-    requiredTraits: { crisp: 6 },
-    explanationTemplate: ["You repeatedly chose fresh, citrus-forward options.", "You value clarity and balance over heavy richness."]
-  },
-  {
-    personaId: "cozy-romantic",
-    title: "Cozy Romantic",
-    description: "You lean into warm moments, soft textures, and comforting pours.",
-    recommendedStyles: ["Pinot Noir", "Merlot", "Gamay"],
-    requiredTraits: { cozy: 5 },
-    explanationTemplate: ["Your answers favored smooth, cozy experiences.", "You gravitate toward gentle tannins and soft fruit."]
-  },
-  {
-    personaId: "bold-main-character",
-    title: "Bold Main Character",
-    description: "You like statement wines with depth, structure, and presence.",
-    recommendedStyles: ["Cabernet Sauvignon", "Syrah", "Malbec"],
+    personaId: "main-character-merlot",
+    title: "The Main Character Merlot",
+    description: "You arrive with confidence and choose smooth, crowd-pleasing wines that always work.",
+    recommendedStyles: ["Merlot", "Plush Red Blends", "Easy Cabernet Sauvignon"],
     requiredTraits: { bold: 6 },
-    explanationTemplate: ["You selected rich, expressive flavor directions.", "You consistently preferred intensity and power."]
+    traitProfile: { bold: 3, social: 2, classic: 1, cozy: 1 },
+    explanationTemplate: [
+      "You favor smooth, confident wines that land with everyone.",
+      "Reliable does not mean basic. Your choices are polished and intentional."
+    ]
   },
   {
-    personaId: "adventurous-explorer",
-    title: "Adventurous Explorer",
-    description: "You enjoy discovery, unusual pairings, and trying new regions.",
-    recommendedStyles: ["Orange Wine", "Pet-Nat", "Gruner Veltliner"],
-    requiredTraits: { adventurous: 5 },
-    explanationTemplate: ["You chose variety and novelty over safe picks.", "You showed high curiosity across pairings and contexts."]
+    personaId: "pinot-noir-overthinker",
+    title: "The Pinot Noir Overthinker",
+    description: "You love nuance, subtext, and elegant wines with emotional complexity.",
+    recommendedStyles: ["Pinot Noir", "Cinsault", "Cool-Climate Red Blends"],
+    requiredTraits: { classic: 6 },
+    traitProfile: { classic: 3, cozy: 2, crisp: 1, adventurous: 1 },
+    explanationTemplate: [
+      "You consistently picked subtle, layered profiles over loud intensity.",
+      "Your palate values detail, finesse, and complexity in every sip."
+    ]
   },
   {
-    personaId: "elegant-traditionalist",
-    title: "Elegant Traditionalist",
-    description: "You prefer timeless choices, classic structure, and refined balance.",
-    recommendedStyles: ["Chianti Classico", "Chardonnay", "Bordeaux Blend"],
-    requiredTraits: { classic: 5 },
-    explanationTemplate: ["You repeatedly leaned toward classic profiles.", "You value heritage styles and refined structure."]
+    personaId: "chenin-blanc-evangelist",
+    title: "The Chenin Blanc Evangelist",
+    description: "Bright, lively, and energetic. You champion fresh wines that feel alive.",
+    recommendedStyles: ["Chenin Blanc", "Sauvignon Blanc", "Zesty White Blends"],
+    requiredTraits: { crisp: 6 },
+    traitProfile: { crisp: 3, adventurous: 1, social: 1 },
+    explanationTemplate: [
+      "You repeatedly leaned toward bright acidity and vibrant freshness.",
+      "Your picks show a lively palate that likes energy and lift."
+    ]
   },
   {
-    personaId: "sweet-tooth",
-    title: "Sweet Tooth (With Style)",
-    description: "You enjoy lush fruit and a touch of sweetness without losing elegance.",
-    recommendedStyles: ["Moscato d'Asti", "Off-Dry Riesling", "Brachetto"],
-    requiredTraits: { sweet: 5 },
-    explanationTemplate: ["You preferred fruit-forward and approachable options.", "Your picks suggest a balanced sweet-leaning palate."]
+    personaId: "surprise-me-sommelier",
+    title: "The \"Surprise Me\" Sommelier",
+    description: "You skip the obvious and chase unusual bottles with story and character.",
+    recommendedStyles: ["Orange Wine", "Natural Wine", "Experimental Regional Blends"],
+    requiredTraits: { adventurous: 6 },
+    traitProfile: { adventurous: 3, crisp: 1, bold: 1, social: 1 },
+    explanationTemplate: [
+      "You repeatedly chose discovery over familiar labels.",
+      "You are drawn to unusual styles, new regions, and wines with a story."
+    ]
   },
   {
-    personaId: "sparkling-socialite",
-    title: "Sparkling Socialite",
-    description: "You are celebratory, lively, and happiest sharing wine with people.",
-    recommendedStyles: ["Prosecco", "Cava", "Champagne Brut"],
-    requiredTraits: { social: 5 },
-    explanationTemplate: ["You selected festive and group-friendly choices.", "You consistently optimized for social occasions."]
+    personaId: "braai-boss",
+    title: "The Braai Boss",
+    description: "Big table energy, smoky food, and bold pours with backbone.",
+    recommendedStyles: ["Shiraz", "Pinotage", "Stellenbosch Bold Reds"],
+    requiredTraits: { bold: 5, social: 4 },
+    traitProfile: { bold: 3, social: 3, classic: 1, cozy: 1 },
+    explanationTemplate: [
+      "You chose powerful wines built for fire, food, and full tables.",
+      "Your style is generous, social, and unmistakably bold."
+    ]
   },
   {
-    personaId: "budget-savvy-sipper",
-    title: "Budget-Savvy Sipper",
-    description: "You seek high value, smart picks, and reliable bottles.",
-    recommendedStyles: ["Tempranillo", "Chenin Blanc", "Cotes du Rhone"],
-    requiredTraits: { budget: 5 },
-    explanationTemplate: ["You consistently prioritized value and versatility.", "Your choices show practical, quality-first instincts."]
+    personaId: "rose-all-day-diplomat",
+    title: "The Rose All Day Diplomat",
+    description: "Low drama, high aesthetic. You pick balanced wines that match the vibe perfectly.",
+    recommendedStyles: ["Rose", "Chillable Reds", "Grenache Coastal Blends"],
+    requiredTraits: { social: 6 },
+    traitProfile: { social: 3, crisp: 1, cozy: 1, sweet: 1 },
+    explanationTemplate: [
+      "Your choices balance softness, freshness, and effortless style.",
+      "You optimize for harmony and mood without sacrificing quality."
+    ]
+  },
+  {
+    personaId: "cabernet-ceo",
+    title: "The Cabernet CEO",
+    description: "Structured, decisive, and serious about quality. You choose with authority.",
+    recommendedStyles: ["Cabernet Sauvignon", "Bordeaux Blends", "Structured Reserve Reds"],
+    requiredTraits: { classic: 5, bold: 4 },
+    traitProfile: { classic: 3, bold: 2, social: 1 },
+    explanationTemplate: [
+      "You consistently selected structure, depth, and classic authority.",
+      "Your palate signals leadership energy and no-nonsense decisions."
+    ]
+  },
+  {
+    personaId: "acid-queen-or-king",
+    title: "The Acid Queen (or King)",
+    description: "Crisp, sharp, and clean wins every time. You want precision over plushness.",
+    recommendedStyles: ["High-Acid Riesling", "Mineral Chardonnay", "Sauvignon Blanc with Bite"],
+    requiredTraits: { crisp: 5, adventurous: 3 },
+    traitProfile: { crisp: 3, adventurous: 2, classic: 1 },
+    explanationTemplate: [
+      "You repeatedly favored mouth-watering acidity and tension.",
+      "Your style is focused, clean, and unapologetically crisp."
+    ]
   }
 ];

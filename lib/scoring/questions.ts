@@ -43,11 +43,11 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
   },
   {
     id: "q5",
-    prompt: "Pick your travel destination:",
+    prompt: "Pick your wine region destination:",
     options: [
       { id: "q5_a", label: "Bordeaux", traits: { classic: 2 } },
       { id: "q5_b", label: "Napa", traits: { bold: 2 } },
-      { id: "q5_c", label: "Georgia (the country)", traits: { adventurous: 2 } },
+      { id: "q5_c", label: "Stellenbosch, South Africa", traits: { adventurous: 2, bold: 1 } },
       { id: "q5_d", label: "Any place with value tastings", traits: { budget: 2 } }
     ]
   },
