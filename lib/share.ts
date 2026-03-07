@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { db } from "@/lib/db";
 
 const shareTokenSchema = z.string().regex(/^[A-Za-z0-9_-]{10,128}$/);
 
@@ -17,6 +16,8 @@ export async function resolveSharedResult(token: string): Promise<{ sessionId: s
   if (!safeToken.success) {
     return null;
   }
+
+  const { db } = await import("@/lib/db");
 
   const { data, error } = await db
     .from("quiz_sessions")

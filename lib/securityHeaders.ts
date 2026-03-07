@@ -2,7 +2,7 @@ const isDev = process.env.NODE_ENV !== "production";
 
 const scriptSrc = isDev
   ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://browser.sentry-cdn.com https://js.sentry-cdn.com"
-  : "script-src 'self' https://browser.sentry-cdn.com https://js.sentry-cdn.com";
+  : "script-src 'self' 'unsafe-inline' https://browser.sentry-cdn.com https://js.sentry-cdn.com";
 
 const csp = [
   "default-src 'self'",
