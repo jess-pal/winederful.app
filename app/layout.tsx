@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Sora } from "next/font/google";
 import "./globals.css";
-import "@/lib/env";
 import { GetHelpButton } from "@/components/Support/GetHelpButton";
 
 export const metadata: Metadata = {
