@@ -7,3 +7,5 @@ if (process.env.SENTRY_DSN) {
     enabled: Boolean(process.env.SENTRY_DSN)
   });
 }
+
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
