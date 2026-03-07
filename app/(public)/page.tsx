@@ -12,7 +12,10 @@ export default function LandingPage() {
           <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="flex flex-col">
               <div className="space-y-6">
-                <h1 className="text-5xl leading-tight text-[#F2EEE6] sm:text-6xl">Discover the wine style that fits your personality.</h1>
+                <h1 className="text-5xl leading-tight text-[#F2EEE6] sm:text-6xl">
+                  Discover the <span className="text-[#FF2E55]">wine</span> style that fits your{" "}
+                  <span className="text-[#FF2E55]">personality</span>.
+                </h1>
                 <p className="max-w-xl text-lg text-[#F2EEE6]">
                   Answer 10 quick multiple-choice questions. Get a fun persona, clear explanation, and a seriously shareable result page.
                 </p>

@@ -131,3 +131,16 @@ export const internalIssueDraftCreateSchema = z.object({
     note: z.string().min(3).max(500).optional()
   })
 });
+
+export const autopilotQueueDecisionSchema = z.object({
+  decision: z.enum(["approve", "reject"]),
+  note: z.string().min(3).max(500).optional()
+});
+
+export const autopilotPrDraftRequestSchema = z.object({
+  queueId: z.string().uuid(),
+  approval: z.object({
+    approved: z.literal(true),
+    note: z.string().min(3).max(500).optional()
+  })
+});

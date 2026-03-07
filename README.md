@@ -1,4 +1,4 @@
-# Wine Persona (Phase 0-4.1)
+# Wine Persona (Phase 0-4.2)
 
 A privacy-first viral quiz app built with Next.js + TypeScript + Tailwind + Supabase.
 
@@ -14,8 +14,9 @@ A privacy-first viral quiz app built with Next.js + TypeScript + Tailwind + Supa
 - Bug triage intake pipeline (internal JSON + optional Sentry sync)
 - Admin triage dashboard (`/admin/triage`) with proposal-only clustering + issue draft workflow
 - Human-approved internal issue draft creation with citations + audit trail
-- Scheduled triage automation (hourly Sentry sync + daily triage summaries)
+- Scheduled triage automation (hourly Sentry sync + triage summaries every 2 days)
 - Daily communication summaries visible in admin triage UI
+- Safe autopilot scaffolding (proposal queue, approval-gated PR draft stubs, post-release verification runs)
 - Data export JSON + delete-request scaffold
 - API input validation with Zod
 - Rate limiting (in-memory adapter)
@@ -61,6 +62,8 @@ A privacy-first viral quiz app built with Next.js + TypeScript + Tailwind + Supa
    - `RESEND_API_KEY` required for email digest sending
    - `TRIAGE_EMAIL_TO` required recipient (your Gmail address)
    - `TRIAGE_EMAIL_FROM` required sender (verified domain/sender in Resend)
+   - `AUTOPILOT_ENABLE_QUEUE` set `true` to enable scheduled/admin proposal queue building
+   - `AUTOPILOT_ALLOW_PR_DRAFTS` set `true` to allow low-risk PR draft stub generation (no execution)
 5. Run doctor script:
    ```bash
    pnpm doctor
@@ -76,6 +79,8 @@ A privacy-first viral quiz app built with Next.js + TypeScript + Tailwind + Supa
    - Run `sql/phase4_rls.sql`
    - Run `sql/phase4_1_schema.sql`
    - Run `sql/phase4_1_rls.sql`
+   - Run `sql/phase4_2_schema.sql`
+   - Run `sql/phase4_2_rls.sql`
 7. Start app:
    ```bash
    pnpm dev
@@ -149,8 +154,8 @@ pnpm typecheck
 
 - Scheduled routes:
   - `GET /api/internal/cron/triage-sync` (hourly)
-  - `GET /api/internal/cron/triage-daily-summary` (daily)
-  - `GET /api/internal/cron/triage-email-digest` (daily, after summary)
+  - `GET /api/internal/cron/triage-daily-summary` (every 2 days at 07:00 SAST)
+  - `GET /api/internal/cron/triage-email-digest` (every 2 days at 07:05 SAST, after summary)
 - Daily summaries are stored in `triage_reports` and shown in `/admin/triage` under **Daily Updates**
 - Admin can also generate a summary manually from `/admin/triage` using **Generate Summary**
 - Admin can manually send the latest digest email from `/admin/triage` using **Send Digest Email**
@@ -159,7 +164,30 @@ pnpm typecheck
   - `x-cron-secret: <TRIAGE_CRON_SECRET>`
 - Vercel cron schedule is defined in `vercel.json`
 
+## Safe Autopilot (Phase 4.2)
+
+- Queue builder (manual/admin or scheduled): proposal-only records in `triage_autopilot_queue`
+- Approval-gated PR draft stub route: `POST /api/admin/triage/autopilot/pr-draft`
+- No autonomous code edits, merge, or deployment are performed
+- Post-release verification scaffold writes monitoring runs to `triage_verification_runs`
+
 See full operator workflow in `RUNBOOK_BUG_TRIAGE.md`.
+
+## Sentry Setup (Optional, Recommended)
+
+1. Create a Sentry Next.js project.
+2. Set these env vars in Vercel:
+   - `SENTRY_DSN`
+   - `SENTRY_AUTH_TOKEN`
+   - `SENTRY_ORG_SLUG`
+   - `SENTRY_PROJECT_SLUG`
+3. Redeploy.
+4. Trigger a test error and confirm it appears in Sentry.
+5. Use `/admin/triage` -> **Sync Sentry** to import unresolved events into triage.
+
+Temporary verification helper (admin-only):
+- `POST /api/debug/sentry-test` with `Authorization: Bearer <access_token>`
+- Returns a unique `marker`; search Sentry for that marker to confirm ingestion.
 
 ## Notes
 

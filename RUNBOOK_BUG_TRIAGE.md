@@ -1,4 +1,4 @@
-# Bug Triage Runbook (Phase 4.1)
+# Bug Triage Runbook (Phase 4.2)
 
 ## Goal
 
@@ -7,7 +7,7 @@ Create a closed-loop bug workflow:
 2. triage and prioritize,
 3. generate a fix plan,
 4. approve issue draft creation,
-5. communicate daily outcomes.
+5. communicate outcomes on a regular schedule.
 
 ## Sources of bugs
 
@@ -32,14 +32,18 @@ Create a closed-loop bug workflow:
 
 Configured in `vercel.json`:
 - Hourly Sentry sync: `/api/internal/cron/triage-sync`
-- Daily summary generation: `/api/internal/cron/triage-daily-summary`
-- Daily digest email send: `/api/internal/cron/triage-email-digest`
+- Hourly autopilot queue build: `/api/internal/cron/triage-proposal-queue`
+- Summary generation every 2 days (07:00 SAST): `/api/internal/cron/triage-daily-summary`
+- Digest email send every 2 days (07:05 SAST): `/api/internal/cron/triage-email-digest`
+- Daily post-release verification scaffold: `/api/internal/cron/triage-post-release-verify`
 
 Set environment variable:
 - `TRIAGE_CRON_SECRET` or `CRON_SECRET` (required for cron route auth)
 - `RESEND_API_KEY` (required for email provider auth)
 - `TRIAGE_EMAIL_TO` (recipient, e.g. your Gmail)
 - `TRIAGE_EMAIL_FROM` (verified sender in Resend)
+- `AUTOPILOT_ENABLE_QUEUE` (`true`/`false`)
+- `AUTOPILOT_ALLOW_PR_DRAFTS` (`true`/`false`)
 
 Cron request auth accepted via either:
 - `Authorization: Bearer <TRIAGE_CRON_SECRET or CRON_SECRET>`
@@ -52,6 +56,16 @@ Cron request auth accepted via either:
 - Structured schema validation and citations.
 - Audit log entries for ingest/proposal/draft/report actions.
 - No secrets in triage text (sanitization/redaction).
+- Low-risk gate required for PR draft stub generation.
+
+## Autopilot flow (safe mode)
+
+1. Build queue: `POST /api/admin/triage/autopilot/queue` (or cron route).
+2. Review queue rows: `GET /api/admin/triage/autopilot/queue`.
+3. Decide per queue item: `PATCH /api/admin/triage/autopilot/queue/:id` (`approve` or `reject`).
+4. Create PR draft stub for approved low-risk row:
+   - `POST /api/admin/triage/autopilot/pr-draft`
+   - This creates an internal draft artifact only (no code execution).
 
 ## How communication works
 

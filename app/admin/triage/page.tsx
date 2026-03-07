@@ -294,6 +294,19 @@ export default function AdminTriagePage() {
     }
   }
 
+  async function triggerSentryTestEvent() {
+    setLoading(true);
+    setStatusMessage(null);
+    try {
+      const data = await authedFetch("/api/debug/sentry-test", { method: "POST", body: "{}" });
+      setStatusMessage(`Sentry test event sent. Marker: ${data.marker}`);
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : "Could not trigger Sentry test event");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function updateStatus(status: TriageItem["status"]) {
     if (!selectedId) return;
 
@@ -416,6 +429,9 @@ export default function AdminTriagePage() {
             </Button>
             <Button variant="secondary" onClick={() => void sendDigestEmail()} disabled={loading}>
               Send Digest Email
+            </Button>
+            <Button variant="secondary" onClick={() => void triggerSentryTestEvent()} disabled={loading}>
+              Trigger Sentry Test
             </Button>
             <Button variant="secondary" onClick={() => router.push("/admin/support")}>Support Inbox</Button>
             <Button variant="secondary" onClick={signOut}>

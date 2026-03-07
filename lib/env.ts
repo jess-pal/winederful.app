@@ -17,6 +17,8 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().optional().or(z.literal("")),
   TRIAGE_EMAIL_TO: z.string().email().optional().or(z.literal("")),
   TRIAGE_EMAIL_FROM: z.string().email().optional().or(z.literal("")),
+  AUTOPILOT_ENABLE_QUEUE: z.enum(["true", "false"]).default("false"),
+  AUTOPILOT_ALLOW_PR_DRAFTS: z.enum(["true", "false"]).default("false"),
   ADMIN_ALLOWLIST: z.string().default(""),
   RATE_LIMIT_PROVIDER: z.enum(["db", "upstash"]).default("db"),
   UPSTASH_REDIS_REST_URL: z.string().url().optional().or(z.literal("")),

@@ -1,4 +1,4 @@
-# Security Notes (Phase 0-4.1)
+# Security Notes (Phase 0-4.2)
 
 ## Threat model summary
 
@@ -55,6 +55,13 @@
   - digest email sending is server-side only via provider API token (`RESEND_API_KEY`)
   - daily summary reports stored in protected table with deny-all RLS (`triage_reports`)
   - scheduled sync/report actions written to `audit_logs`
+- Phase 4.2 autopilot protections:
+  - autopilot queue is opt-in behind `AUTOPILOT_ENABLE_QUEUE`
+  - PR draft stubs are opt-in behind `AUTOPILOT_ALLOW_PR_DRAFTS`
+  - PR draft route requires explicit admin approval payload
+  - low-risk guardrail enforced before PR draft stub creation
+  - PR draft route creates metadata/task stubs only (no code execution/merge/deploy)
+  - autopilot queue and verification tables protected by deny-all RLS
 
 ## Remaining risks / future work
 
