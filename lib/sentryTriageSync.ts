@@ -10,6 +10,21 @@ function sentryLevelToSeverity(level: string): "low" | "medium" | "high" | "crit
   return "low";
 }
 
+function isIgnoredSentryRecord(record: Record<string, unknown>) {
+  const title = typeof record.title === "string" ? record.title.toLowerCase() : "";
+  const message = typeof record.message === "string" ? record.message.toLowerCase() : "";
+  const culprit = typeof record.culprit === "string" ? record.culprit.toLowerCase() : "";
+  const permalink = typeof record.permalink === "string" ? record.permalink.toLowerCase() : "";
+  const transaction = typeof record.transaction === "string" ? record.transaction.toLowerCase() : "";
+
+  if (title.includes("manual sentry test from admin route")) return true;
+  if (message.includes("manual sentry test from admin route")) return true;
+  if (culprit.includes("/api/debug/sentry-test")) return true;
+  if (permalink.includes("sentry-test")) return true;
+  if (transaction.includes("/api/debug/sentry-test")) return true;
+  return false;
+}
+
 export function sentrySyncConfigured() {
   return Boolean(env.SENTRY_AUTH_TOKEN && env.SENTRY_ORG_SLUG && env.SENTRY_PROJECT_SLUG);
 }
@@ -53,6 +68,7 @@ export async function syncSentryTriage(options: { limit?: number; actorId?: stri
   for (const item of events) {
     if (!item || typeof item !== "object") continue;
     const record = item as Record<string, unknown>;
+    if (isIgnoredSentryRecord(record)) continue;
 
     const eventId = typeof record.eventID === "string" ? record.eventID : undefined;
     const title = scrubSensitiveText(typeof record.title === "string" ? record.title : "Sentry runtime error", 200);
