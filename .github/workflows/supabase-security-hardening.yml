@@ -1,0 +1,28 @@
+name: Supabase Security Hardening
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "sql/phase6_security_advisor_hardening.sql"
+      - "scripts/apply-security-hardening.sh"
+      - ".github/workflows/supabase-security-hardening.yml"
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  apply-security-hardening:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Apply security hardening SQL
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: ./scripts/apply-security-hardening.sh
+

@@ -194,3 +194,17 @@ Temporary verification helper (admin-only):
 - Public clients never receive Supabase service role key.
 - Quiz share page resolves tokens server-side via `/api/share/resolve`.
 - Authenticated APIs require `Authorization: Bearer <access_token>`.
+
+## Automatic Supabase Security Fixes
+
+This repo includes an automated job that reapplies Security Advisor hardening SQL:
+- Workflow: `.github/workflows/supabase-security-hardening.yml`
+- SQL file: `sql/phase6_security_advisor_hardening.sql`
+
+Set this GitHub Actions secret in your repository:
+- `SUPABASE_DB_URL` (direct Postgres connection string for your production project)
+
+After that, hardening runs automatically:
+- on pushes to `main` that touch hardening files
+- nightly on schedule
+- manually via **Run workflow**
