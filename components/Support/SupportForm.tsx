@@ -176,7 +176,7 @@ export function SupportForm() {
         </label>
 
         <Button type="submit" disabled={submitting || description.trim().length < 10}>
-          {submitting ? "Submitting..." : "Create support ticket"}
+          {submitting ? "Submitting..." : "Submit"}
         </Button>
       </form>
 

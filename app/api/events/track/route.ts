@@ -1,27 +1,23 @@
 import { NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { getRequestFingerprint } from "@/lib/security";
-import { trackEvent } from "@/lib/analytics";
 import { trackProductEvent } from "@/lib/productEvents";
+import { productEventTrackSchema } from "@/lib/zodSchemas";
 
 export async function POST(request: Request) {
+  const body = await request.json();
+  const parsed = productEventTrackSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid product event payload" }, { status: 400 });
+  }
+
   const { ipHash } = await getRequestFingerprint();
-  const limiter = checkRateLimit(`quiz_start:${ipHash}`, 60, 60_000);
+  const limiter = checkRateLimit(`product_event:${ipHash}`, 180, 60_000);
   if (!limiter.allowed) {
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
-  await trackEvent({
-    eventName: "started_quiz",
-    metadata: { page: "/quiz" },
-    ipHash
-  });
-  await trackProductEvent({
-    eventName: "quiz_started",
-    route: "/quiz",
-    source: new URL(request.url).searchParams.get("from") || undefined,
-    metadata: { page: "/quiz" }
-  });
-
+  await trackProductEvent(parsed.data);
   return NextResponse.json({ ok: true });
 }

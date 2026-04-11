@@ -257,14 +257,17 @@ export default function AdminSupportPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-4xl">Support Admin</h1>
-            <p className="text-sm text-slate-700">Review tickets, update status and store reply drafts.</p>
+            <p className="text-sm text-[#F2EEE6]/78">Review tickets, update status, and store reply drafts.</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={() => void loadTickets()} disabled={loading}>
               Refresh
             </Button>
+            <Button variant="secondary" onClick={() => router.push("/admin/overview")}>
+              Overview
+            </Button>
             <Button variant="secondary" onClick={() => router.push("/admin/quiz")}>
-              Quiz results
+              Quiz analytics
             </Button>
             <Button variant="secondary" onClick={() => router.push("/admin/triage")}>
               Bug triage
@@ -275,10 +278,10 @@ export default function AdminSupportPage() {
           </div>
         </div>
 
-        {statusMessage && <p className="rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-900">{statusMessage}</p>}
+        {statusMessage && <p className="rounded-xl border border-[#ff2e55]/35 bg-[#ff2e55]/12 px-3 py-2 text-sm text-[#F8DCE3]">{statusMessage}</p>}
 
         <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
-          <Card className="space-y-3">
+          <Card className="space-y-3 !bg-white !text-slate-900">
             <h2 className="text-xl">Tickets</h2>
             <div className="grid grid-cols-2 gap-2">
               <label className="space-y-1 text-sm">
@@ -323,7 +326,7 @@ export default function AdminSupportPage() {
             </div>
           </Card>
 
-          <Card className="space-y-4">
+          <Card className="space-y-4 !bg-white !text-slate-900">
             {!selectedTicket ? (
               <p className="text-sm text-slate-700">Select a ticket to view details.</p>
             ) : (

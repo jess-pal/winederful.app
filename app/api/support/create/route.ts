@@ -11,6 +11,7 @@ import { validateImageMime, validateImageSignature } from "@/lib/fileValidation"
 import { env } from "@/lib/env";
 import { log } from "@/lib/logger";
 import { upsertTriageFromSupportTicket } from "@/lib/triageSupportSync";
+import { trackProductEvent } from "@/lib/productEvents";
 
 const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
 
@@ -189,6 +190,17 @@ export async function POST(request: Request) {
       reason: error instanceof Error ? error.message : "unknown"
     });
   }
+
+  await trackProductEvent({
+    eventName: "support_submitted",
+    route: "/support",
+    metadata: {
+      category: parsed.data.category,
+      ticketId: ticket.id,
+      attachmentUploaded: Boolean(attachmentInfo),
+      fromLoggedInUser: Boolean(optionalAuth?.user.id)
+    }
+  });
 
   return NextResponse.json({
     ticketId: ticket.id,
