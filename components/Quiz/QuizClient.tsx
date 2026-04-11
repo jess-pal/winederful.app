@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { QUIZ_QUESTIONS } from "@/lib/scoring/questions";
 import { QUIZ_ANSWERS_STORAGE_KEY } from "@/lib/quizStorage";
+import { sendClientEvent } from "@/lib/clientAnalytics";
 
 type Answer = { questionId: string; optionId: string };
 
@@ -30,6 +31,7 @@ function loadStoredAnswers(): Record<string, string> {
 
 export function QuizClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [answers, setAnswers] = useState<Record<string, string>>(() => loadStoredAnswers());
   const [index, setIndex] = useState(() => {
     const storedAnswers = loadStoredAnswers();
@@ -43,10 +45,13 @@ export function QuizClient() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const questionStartedAtRef = useRef<number>(0);
+  const shareVisitTrackedRef = useRef(false);
 
   useEffect(() => {
-    void fetch("/api/quiz/start", { method: "POST" });
-  }, []);
+    const from = searchParams.get("from");
+    void fetch(`/api/quiz/start${from ? `?from=${encodeURIComponent(from)}` : ""}`, { method: "POST" });
+  }, [searchParams]);
 
   useEffect(() => {
     localStorage.setItem(QUIZ_ANSWERS_STORAGE_KEY, JSON.stringify(answers));
@@ -54,6 +59,35 @@ export function QuizClient() {
 
   const current = QUIZ_QUESTIONS[index];
   const selected = answers[current.id];
+  const entrySource = searchParams.get("from") || "direct";
+
+  useEffect(() => {
+    questionStartedAtRef.current = Date.now();
+    void sendClientEvent({
+      eventName: "question_viewed",
+      route: "/quiz",
+      questionId: current.id,
+      questionIndex: index + 1,
+      source: entrySource,
+      metadata: {
+        answerSelected: false
+      }
+    });
+  }, [current.id, entrySource, index]);
+
+  useEffect(() => {
+    if (entrySource === "share" && !shareVisitTrackedRef.current) {
+      shareVisitTrackedRef.current = true;
+      void sendClientEvent({
+        eventName: "share_opened_from_friend",
+        route: "/quiz",
+        source: "share",
+        metadata: {
+          hasToken: Boolean(searchParams.get("token"))
+        }
+      });
+    }
+  }, [entrySource, searchParams]);
 
   const payload = useMemo<Answer[]>(() => {
     return QUIZ_QUESTIONS.map((q) => ({ questionId: q.id, optionId: answers[q.id] })).filter((a) => Boolean(a.optionId));
@@ -61,12 +95,30 @@ export function QuizClient() {
 
   const onSubmit = async () => {
     if (!answers[current.id]) {
-      setError("Pick an answer first, then we will reveal your persona.");
+      setError("Pick one answer first, then we'll reveal your persona.");
+      void sendClientEvent({
+        eventName: "quiz_submit_failed",
+        route: "/quiz",
+        questionId: current.id,
+        questionIndex: index + 1,
+        source: entrySource,
+        metadata: { reason: "missing_answer" }
+      });
       return;
     }
 
     setIsSubmitting(true);
     setError(null);
+    void sendClientEvent({
+      eventName: "quiz_submit_attempted",
+      route: "/quiz",
+      questionId: current.id,
+      questionIndex: index + 1,
+      source: entrySource,
+      metadata: {
+        durationMs: Date.now() - questionStartedAtRef.current
+      }
+    });
     try {
       const res = await fetch("/api/quiz/submit", {
         method: "POST",
@@ -76,7 +128,15 @@ export function QuizClient() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Could not submit quiz.");
+        setError(data.error || "We couldn't submit your quiz right now.");
+        void sendClientEvent({
+          eventName: "quiz_submit_failed",
+          route: "/quiz",
+          questionId: current.id,
+          questionIndex: index + 1,
+          source: entrySource,
+          metadata: { reason: data.error || "submit_failed" }
+        });
         setIsSubmitting(false);
         return;
       }
@@ -85,24 +145,55 @@ export function QuizClient() {
       sessionStorage.setItem("wine-persona-last-result", JSON.stringify(data.result));
       router.push(`/results?sid=${encodeURIComponent(data.sessionId)}&token=${encodeURIComponent(data.shareToken)}`);
     } catch {
-      setError("Network issue while saving your quiz. Please try again.");
+      setError("We hit a network wobble while saving. Please try again.");
+      void sendClientEvent({
+        eventName: "quiz_submit_failed",
+        route: "/quiz",
+        questionId: current.id,
+        questionIndex: index + 1,
+        source: entrySource,
+        metadata: { reason: "network_error" }
+      });
       setIsSubmitting(false);
     }
   };
 
   const onNext = () => {
     if (!answers[current.id]) {
-      setError("Please select an option before continuing.");
+      setError("Choose an option first, then hit next.");
       return;
     }
 
     setError(null);
+    void sendClientEvent({
+      eventName: "question_advanced",
+      route: "/quiz",
+      questionId: current.id,
+      questionIndex: index + 1,
+      source: entrySource,
+      metadata: {
+        durationMs: Date.now() - questionStartedAtRef.current,
+        selectedOptionId: answers[current.id]
+      }
+    });
     setIndex((v) => Math.min(v + 1, QUIZ_QUESTIONS.length - 1));
   };
 
   const onSelectOption = (optionId: string) => {
+    const previousOptionId = answers[current.id];
     setAnswers((prev) => ({ ...prev, [current.id]: optionId }));
     setError(null);
+    void sendClientEvent({
+      eventName: previousOptionId && previousOptionId !== optionId ? "answer_changed" : "answer_selected",
+      route: "/quiz",
+      questionId: current.id,
+      questionIndex: index + 1,
+      source: entrySource,
+      metadata: {
+        optionId,
+        previousOptionId: previousOptionId || null
+      }
+    });
   };
 
   return (
@@ -145,11 +236,28 @@ export function QuizClient() {
 
         {error && <p className="rounded-xl border border-[#FF2E55]/60 bg-[#2a0d15] px-3 py-2 text-sm text-[#ffd8e0]">{error}</p>}
         {index === QUIZ_QUESTIONS.length - 1 && !answers[current.id] && (
-          <p className="text-sm text-[#F2EEE6]">Choose one option to unlock the persona result.</p>
+          <p className="text-sm text-[#F2EEE6]">Choose one option to unlock your result.</p>
         )}
 
         <div className="flex items-center justify-between gap-3 pt-2">
-          <Button variant="secondary" onClick={() => setIndex((v) => Math.max(v - 1, 0))} disabled={index === 0 || isSubmitting} className="min-w-28">
+          <Button
+            variant="secondary"
+            onClick={() => {
+              void sendClientEvent({
+                eventName: "question_back_clicked",
+                route: "/quiz",
+                questionId: current.id,
+                questionIndex: index + 1,
+                source: entrySource,
+                metadata: {
+                  durationMs: Date.now() - questionStartedAtRef.current
+                }
+              });
+              setIndex((v) => Math.max(v - 1, 0));
+            }}
+            disabled={index === 0 || isSubmitting}
+            className="min-w-28"
+          >
             Back
           </Button>
 
@@ -159,7 +267,7 @@ export function QuizClient() {
             </Button>
           ) : (
             <Button onClick={onSubmit} disabled={isSubmitting} className="min-w-40">
-              {isSubmitting ? "Calculating..." : "See my persona"}
+              {isSubmitting ? "Mixing your result..." : "Reveal my persona"}
             </Button>
           )}
         </div>

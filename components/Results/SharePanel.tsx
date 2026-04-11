@@ -34,7 +34,9 @@ export function SharePanel({
 
   const fullShareUrl = useMemo(() => {
     const base = siteUrl?.startsWith("http") ? siteUrl : typeof window !== "undefined" ? window.location.origin : "";
-    return `${base}${sharePath}`;
+    const token = sharePath.split("/").pop();
+    const friendQuizPath = token ? `/quiz?from=share&token=${encodeURIComponent(token)}` : "/quiz?from=share";
+    return `${base}${friendQuizPath}`;
   }, [sharePath, siteUrl]);
 
   const shareText = `I got ${title} on Wine Persona. What wine are you?`;
@@ -90,7 +92,7 @@ export function SharePanel({
         <span className="disco-sticker">Share drop</span>
       </div>
       <h2 className="text-3xl leading-tight text-[#F2EEE6]">Share Your Persona</h2>
-      <p className="text-sm text-[#F2EEE6]">This link is public. Anyone with it can view your result and jump into their own quiz.</p>
+      <p className="text-sm text-[#F2EEE6]">This link opens the quiz for your friend so they can get their own wine persona.</p>
 
       <div className="space-y-2">
         {socialButtons.map((button) => (

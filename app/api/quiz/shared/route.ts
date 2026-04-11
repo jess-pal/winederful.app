@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { getRequestFingerprint } from "@/lib/security";
 import { trackEvent } from "@/lib/analytics";
+import { trackProductEvent } from "@/lib/productEvents";
 import { shareTrackSchema } from "@/lib/zodSchemas";
 
 export async function POST(request: Request) {
@@ -23,6 +24,12 @@ export async function POST(request: Request) {
     sessionId: parsed.data.sessionId,
     metadata: { page: "/results", share_path: parsed.data.sharePath, platform: parsed.data.platform },
     ipHash
+  });
+  await trackProductEvent({
+    eventName: parsed.data.platform === "copy" ? "share_copied" : "share_clicked",
+    sessionId: parsed.data.sessionId,
+    route: "/results",
+    metadata: { sharePath: parsed.data.sharePath, platform: parsed.data.platform }
   });
 
   return NextResponse.json({ ok: true });

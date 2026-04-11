@@ -26,6 +26,46 @@ export const shareTrackSchema = z.object({
   sessionId: z.string().uuid().optional()
 });
 
+export const productEventTrackSchema = z.object({
+  eventName: z.enum([
+    "quiz_started",
+    "question_viewed",
+    "answer_selected",
+    "answer_changed",
+    "question_advanced",
+    "question_back_clicked",
+    "quiz_submit_attempted",
+    "quiz_submit_failed",
+    "quiz_completed",
+    "result_viewed",
+    "share_clicked",
+    "share_copied",
+    "share_opened_from_friend",
+    "support_submitted",
+    "feedback_prompt_viewed",
+    "feedback_submitted",
+    "api_error",
+    "client_error",
+    "runtime_error_detected"
+  ]),
+  sessionId: z.string().uuid().optional(),
+  route: z.string().max(200).optional(),
+  questionId: z.string().max(80).optional(),
+  questionIndex: z.number().int().min(0).max(100).optional(),
+  personaId: z.string().max(80).optional(),
+  source: z.string().max(120).optional(),
+  metadata: z.record(z.unknown()).default({})
+});
+
+export const quizFeedbackSchema = z.object({
+  sessionId: z.string().uuid(),
+  rating: z.number().int().min(1).max(3).optional(),
+  feedbackText: z.string().max(2000).optional(),
+  feltAccurate: z.boolean().optional(),
+  wouldShare: z.boolean().optional(),
+  metadata: z.record(z.unknown()).default({})
+});
+
 export const profileUpsertSchema = z.object({
   displayName: z.string().max(80).optional(),
   personaId: z.string().max(80).optional(),
